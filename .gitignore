@@ -32,4 +32,6 @@ build/
 ### VS Code ###
 .vscode/
 
+### Local environment variables ###
+.env
 Seleção DEV Jr. 09_2026 - mini-projeto Full Stack.pdf
