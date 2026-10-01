@@ -3,15 +3,15 @@ package com.portal_interno.api.domain.model.request;
 
 import com.portal_interno.api.domain.model.user.User;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
-
 import java.time.LocalDate;
+import java.util.Objects;
 
 @Entity
 @Table(name = "tb_request")
 @NoArgsConstructor
-@AllArgsConstructor
+@Getter
 public class Request {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,6 +23,36 @@ public class Request {
     @Enumerated(EnumType.STRING)
     private RequestStatus status;
     private LocalDate createdAt;
-    @ManyToOne
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    public Request (String title, String description, RequestCategory category, User userRequest) {
+        validateTitle(title);
+        validateDescription(description);
+        validateCategory(category);
+        Objects.requireNonNull(userRequest, "Requesting user is required.");
+        this.title = title;
+        this.description = description;
+        this.category = category;
+        this.status = RequestStatus.OPEN;
+        this.createdAt = LocalDate.now();
+        this.user = userRequest;
+    }
+
+    private void validateTitle(String title) {
+        if (title == null || title.isBlank() || title.length() > 150) {
+            throw new IllegalArgumentException("Title must contain between 1 and 150 characters.");
+        }
+    }
+    private void validateDescription(String description) {
+        if (description == null || description.isBlank()) {
+            throw new IllegalArgumentException("Description is required.");
+        }
+    }
+    private void validateCategory(RequestCategory category) {
+        if (category == null) {
+            throw new IllegalArgumentException("Category is required.");
+        }
+    }
 }
