@@ -1,7 +1,7 @@
 package com.portal_interno.api.domain.model.user;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 
@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "tb_user")
 @NoArgsConstructor
-@AllArgsConstructor
+@Getter
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,5 +22,9 @@ public class User {
     private LocalDateTime expireAt;
     @Enumerated(EnumType.STRING)
     private Role role;
+
+    public User (String username) {
+        this.username = new Username(username);
+    }
 
 }
