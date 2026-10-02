@@ -14,6 +14,11 @@ jobs:
         env:
           MYSQL_ROOT_PASSWORD: root
           MYSQL_DATABASE: db_portal_solicitacoes
+          API_SECURITY_TOKEN_SECRET: m5CDrAYgQ5dPk1vDv2WkJMx9p5GMFGZL
+          ATTEN_BOOTSTRAP_EMAIL: attendant@example.test
+          ATTEN_BOOTSTRAP_PASSWORD: Senha123@
+          REQ_BOOTSTRAP_EMAIL: requester@example.test
+          REQ_BOOTSTRAP_PASSWORD: Senha123@
         ports:     
           - 3306:3306
     steps:
