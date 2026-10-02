@@ -19,12 +19,18 @@ public class User {
     @Embedded
     private Password password;
     private boolean isActive;
-    private LocalDateTime expireAt;
     @Enumerated(EnumType.STRING)
     private Role role;
 
     public User (String username) {
         this.username = new Username(username);
+    }
+
+    public User (String username, String password,  Role role) {
+        this.username = new Username(username);
+        this.password = new Password(password);
+        this.isActive = true;
+        this.role = role;
     }
 
 }
