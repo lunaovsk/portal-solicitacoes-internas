@@ -2,6 +2,8 @@ package com.portal_interno.api.infra.security;
 
 
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
+import com.portal_interno.api.infra.token.TokenJWT;
+import com.portal_interno.api.service.TokenService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,9 +35,14 @@ public class SecurityConfig {
     private String secret;
 
     @Bean
-    public JwtDecoder jwtDecoder() {
+    public JwtDecoder jwtDecoder(TokenService tokenService) {
         SecretKeySpec key = new SecretKeySpec(secret.getBytes(), "HmacSHA256");
-        return NimbusJwtDecoder.withSecretKey(key).build();
+        NimbusJwtDecoder decoder = NimbusJwtDecoder.withSecretKey(key).build();
+        return token -> {
+            var jwt = decoder.decode(token);
+            tokenService.validateToken(new TokenJWT(jwt.getTokenValue()));
+            return jwt;
+        };
     }
 
     @Bean
