@@ -50,4 +50,31 @@ public class CustomException extends RuntimeException {
                 HttpStatus.NOT_FOUND
         );
     }
+
+    public static CustomException requestNotFound(Long id) {
+        return new CustomException(
+                "Request not found with ID: " + id,
+                "REQUEST_NOT_FOUND",
+                null,
+                HttpStatus.NOT_FOUND
+        );
+    }
+
+    public static CustomException accessDenied(String message) {
+        return new CustomException(
+                message,
+                "ACCESS_DENIED",
+                null,
+                HttpStatus.FORBIDDEN
+        );
+    }
+
+    public static CustomException validationError(String message) {
+        return new CustomException(
+                message,
+                "ERROR_VALIDATION",
+                null,
+                HttpStatus.BAD_REQUEST
+        );
+    }
 }

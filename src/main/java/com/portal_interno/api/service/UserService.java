@@ -5,6 +5,7 @@ import com.portal_interno.api.domain.model.user.Role;
 import com.portal_interno.api.domain.model.user.User;
 import com.portal_interno.api.domain.model.user.Username;
 import com.portal_interno.api.domain.repository.UserRepository;
+import com.portal_interno.api.infra.exception.CustomException;
 import com.portal_interno.api.infra.token.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -25,7 +26,7 @@ public class UserService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         var user = userRepository.findByUsername_Username(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found."));
+                .orElseThrow(() -> CustomException.userNotFound(username));
         return new UserDetailsImpl(user);
     }
 

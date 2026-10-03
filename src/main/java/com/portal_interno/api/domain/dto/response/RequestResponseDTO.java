@@ -9,6 +9,7 @@ import java.time.LocalDate;
 public record RequestResponseDTO(
         Long id,
         String title,
+        String description,
         RequestCategory requestCategory,
         String username,
         LocalDate createdAt,
@@ -18,6 +19,7 @@ public record RequestResponseDTO(
         this(
                 request.getId(),
                 request.getTitle(),
+                request.getDescription(),
                 request.getCategory(),
                 request.getUser().getUsername().getUsername(),
                 request.getCreatedAt(),
