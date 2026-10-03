@@ -6,7 +6,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import java.time.LocalDate;
-import java.util.Objects;
 
 @Entity
 @Table(name = "tb_request")
@@ -23,7 +22,7 @@ public class Request {
     @Enumerated(EnumType.STRING)
     private RequestStatus status;
     private LocalDate createdAt;
-    @ManyToOne(optional = false)
+    @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
@@ -31,7 +30,6 @@ public class Request {
         validateTitle(title);
         validateDescription(description);
         validateCategory(category);
-        Objects.requireNonNull(userRequest, "Requesting user is required.");
         this.title = title;
         this.description = description;
         this.category = category;
@@ -54,5 +52,21 @@ public class Request {
         if (category == null) {
             throw new IllegalArgumentException("Category is required.");
         }
+    }
+
+    public void editar(String title, String description, RequestCategory category) {
+        validateTitle(title);
+        validateDescription(description);
+        validateCategory(category);
+        this.title = title;
+        this.description = description;
+        this.category = category;
+    }
+
+    public void updateStatus(RequestStatus newStatus) {
+        if (newStatus == null) {
+            throw new IllegalArgumentException("Status cannot be null.");
+        }
+        this.status = newStatus;
     }
 }
