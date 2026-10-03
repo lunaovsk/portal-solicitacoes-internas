@@ -56,6 +56,14 @@ public class RequestController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ATTENDANT')")
+    @Operation(summary = "Busca de solicitação com detalhes", description = "Traz apenas a solicitação detalhada através do ID")
+    public ResponseEntity<RequestResponseDTO> listMyRequests(@PathVariable Long id) {
+        RequestResponseDTO response = requestService.getRequestById(id);
+        return ResponseEntity.ok(response);
+    }
+
     @PutMapping("/{id}/update")
     @PreAuthorize("hasAuthority('SCOPE_ROLE_REQUESTER')")
     public ResponseEntity<RequestResponseDTO> requestUpdate(@PathVariable Long id, @Valid @RequestBody RequestAttDTO requestAttDTO, @AuthenticationPrincipal Jwt principal) {

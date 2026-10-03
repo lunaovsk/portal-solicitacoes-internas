@@ -43,6 +43,12 @@ public class RequestService {
         return requests.stream().map(RequestResponseDTO::new).toList();
     }
 
+    @Transactional(readOnly = true)
+    public RequestResponseDTO getRequestById(Long id) {
+        var req = requestRepository.findById(id).orElseThrow(() -> CustomException.requestNotFound(id));
+        return new RequestResponseDTO(req);
+    }
+
     @Transactional
     public RequestResponseDTO createdRequest(RequestDTO requestDTO, String username) {
         var user = userRepository.findByUsername_Username(username).orElseThrow(() -> CustomException.userNotFound(username));
