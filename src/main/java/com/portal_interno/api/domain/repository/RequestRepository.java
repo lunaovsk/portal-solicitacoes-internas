@@ -1,6 +1,7 @@
 package com.portal_interno.api.domain.repository;
 
 import com.portal_interno.api.domain.model.request.Request;
+import com.portal_interno.api.domain.model.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -26,7 +27,7 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
             "AND (:endDate IS NULL OR r.createdAt <= :endDate) ")
     List<Request> findFilterRequest(String title, RequestCategory category, RequestStatus status, LocalDate startDate, LocalDate endDate);
     Request findByIdAndStatus(Long id, RequestStatus status);
-
+    Request findByIdAndUser(Long id, User user);
     /* Dashboard */
 
     long count();
@@ -34,7 +35,7 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
 
     /* Dashboard para colaboradores */
 
-    long countByUser(Long id);
-    long countByStatus(Long id, RequestStatus status);
+    long countByUser(User user);
+    long countByUserAndStatus(User user, RequestStatus status);
 
 }

@@ -79,6 +79,38 @@ O Maven Wrapper (`mvnw` / `mvnw.cmd`) está incluído; não é necessário insta
 
    A API por padrão fica disponível em `http://localhost:8080`. Na inicialização, o Flyway aplica as migrações pendentes, e duas contas são provisionadas caso os usernames ainda não existam: uma `ATTENDANT` e uma `REQUESTER`.
 
+### Docker: instalação e build da imagem
+
+#### Instalar o Docker no Windows
+
+1. Confira os [requisitos do Docker Desktop para Windows](https://docs.docker.com/desktop/setup/install/windows-install/), incluindo a disponibilidade do WSL 2.
+2. Baixe e instale o **Docker Desktop para Windows** pelo site oficial do [Docker](https://www.docker.com/products/docker-desktop/). Durante a instalação, selecione o backend WSL 2 quando essa opção for apresentada.
+3. Se o instalador solicitar, reinicie o computador. Abra o Docker Desktop e aguarde até indicar que o mecanismo Docker está em execução.
+4. No PowerShell, confirme a instalação:
+
+   ```powershell
+   docker --version
+   docker compose version
+   ```
+
+#### Criar a imagem da API
+
+O Dockerfile usa um build em múltiplas etapas: primeiro compila e empacota a API com Maven e Java 21; depois copia o JAR para uma imagem menor com Java 21 JRE, que é usada para executar a aplicação.
+
+1. Abra o PowerShell na pasta raiz do repositório, onde está o `Dockerfile`.
+2. Execute o comando abaixo para construir a imagem para Linux ARM64 e identificá-la com o nome `lunaosvki/portal-solicitacao` e a tag `1.0`:
+
+   ```powershell
+   docker build --platform linux/arm64 -t lunaosvki/portal-solicitacao:1.0 .
+   ```
+
+   O ponto final indica que a pasta atual é o contexto do build.
+3. Ao concluir, confira se a imagem foi criada:
+
+   ```powershell
+   docker image ls lunaosvki/portal-solicitacao
+   ```
+
 ### Migrações do banco
 
 As migrações ficam em `src/main/resources/db/migration` e são aplicadas automaticamente pelo Flyway:
@@ -132,7 +164,7 @@ Todas as rotas usam o prefixo `/api/v1`. Exceto login e documentação Swagger, 
 | `POST` | `/auth/login` | Público | Autentica usuário e senha e retorna um JWT. |
 | `POST` | `/auth/logout` | Autenticado | Revoga o token atual; retorna `204`. |
 | `POST` | `/request` | `REQUESTER` | Cria uma solicitação aberta. |
-| `GET` | `/request` | `REQUESTER` | Lista as solicitações do usuário autenticado, com filtros opcionais. |
+| `GET` | `/request/filter` | `REQUESTER` | Lista as solicitações do usuário autenticado, com filtros opcionais. |
 | `GET` | `/request/all` | `ATTENDANT` | Lista todas as solicitações, com filtros opcionais. |
 | `GET` | `/request/{id}` | `ATTENDANT` | Consulta os detalhes de uma solicitação pelo ID. |
 | `PUT` | `/request/{id}/update` | `REQUESTER` | Edita uma solicitação própria ainda aberta. |
@@ -160,10 +192,10 @@ O título é obrigatório e limitado a 150 caracteres. A descrição e a categor
 Os filtros são opcionais e podem ser combinados. As datas usam o formato `yyyy-MM-dd`.
 
 ```http
-GET /api/v1/request?title=acesso&category=IT&status=OPEN&startDate=2026-01-01&endDate=2026-12-31
+GET /api/v1/request/filter?title=acesso&category=IT&status=OPEN&startDate=2026-01-01&endDate=2026-12-31
 ```
 
-Parâmetros disponíveis: `title` (texto parcial), `category`, `status`, `startDate` e `endDate`. A rota `/request` limita os resultados ao solicitante autenticado; `/request/all` é exclusiva para atendentes.
+Parâmetros disponíveis: `title` (texto parcial), `category`, `status`, `startDate` e `endDate`. A rota `/request/filter` limita os resultados ao solicitante autenticado; `/request/all` é exclusiva para atendentes e também aceita os mesmos filtros opcionais.
 
 ### Alterar status
 
@@ -237,7 +269,16 @@ src/main/java/com/portal_interno/api/
 │   └── token/        # JWT e adaptação de usuário
 └── service/          # Regras e casos de uso
 ```
+---
 
+## Diagramas e Modelagem
+
+Os diagramas do projeto estão disponíveis em [`docs/diagramas/`](docs/diagramas/):
+
+- [Diagrama de classes](docs-api/classDiagram.jpg)
+- [Diagrama de casos de uso](docs-api/casos-de-uso.jpg)
+- [Modelo do banco de dados (DER)](docs-api/modelagem_dados.png)
+---
 ## Segurança e implantação
 
 - Use HTTPS em ambientes implantados e forneça segredos por variáveis protegidas do ambiente, nunca pelo código ou repositório.

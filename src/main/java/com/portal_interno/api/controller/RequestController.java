@@ -14,7 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,10 +42,10 @@ public class RequestController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @GetMapping
+    @GetMapping("/filter")
     @PreAuthorize("hasAuthority('SCOPE_ROLE_REQUESTER')")
     @Operation(summary = "Listar minhas solicitações", description = "Lista apenas as solicitações do usuário logado. Permite filtros.")
-    public ResponseEntity<List<RequestResponseDTO>> listMyRequests(@ModelAttribute RequestFilterDTO filter, @AuthenticationPrincipal Jwt principal) {
+    public ResponseEntity<List<RequestResponseDTO>> listMyFilterRequests(@ModelAttribute RequestFilterDTO filter, @AuthenticationPrincipal Jwt principal) {
         List<RequestResponseDTO> response = requestService.listMyRequests(filter, principal.getSubject());
         return ResponseEntity.ok(response);
     }
@@ -52,16 +54,19 @@ public class RequestController {
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ATTENDANT')")
     @Operation(summary = "Listar todas as solicitações (Atendimento)", description = "Lista todas as solicitações do sistema. Exclusivo para atendentes. Permite filtros.")
     public ResponseEntity<List<RequestResponseDTO>> listAllRequests(@ModelAttribute RequestFilterDTO filter) {
-        List<RequestResponseDTO> response = requestService.listAllRequests(filter);
+        List<RequestResponseDTO> response = requestService.listFilterRequests(filter);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('SCOPE_ROLE_ATTENDANT')")
     @Operation(summary = "Busca de solicitação com detalhes", description = "Traz apenas a solicitação detalhada através do ID")
-    public ResponseEntity<RequestResponseDTO> listMyRequests(@PathVariable Long id) {
-        RequestResponseDTO response = requestService.getRequestById(id);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<RequestResponseDTO> getRequestByIdAndUser(@PathVariable Long id, Authentication auth) {
+        if (auth.getAuthorities().contains(new SimpleGrantedAuthority("SCOPE_ROLE_ATTENDANT"))) {
+            RequestResponseDTO response = requestService.getRequestById(id);
+            return ResponseEntity.ok(response);
+        }
+        RequestResponseDTO responseDTO = requestService.getRequestByIdAndUser(id, auth.getName());
+        return ResponseEntity.ok(responseDTO);
     }
 
     @PutMapping("/{id}/update")
