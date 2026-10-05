@@ -30,14 +30,14 @@ public class RequestService {
 
     @Transactional(readOnly = true)
     public List<RequestResponseDTO> listMyRequests(RequestFilterDTO filter, String usernameLogado) {
-        java.util.List<Request> requests = requestRepository
+        List<Request> requests = requestRepository
                 .findFilterRequest(
                 filter.title(), filter.category(), filter.status(), filter.startDate(), filter.endDate(), usernameLogado);
         return requests.stream().map(RequestResponseDTO::new).toList();
     }
 
     @Transactional(readOnly = true)
-    public List<RequestResponseDTO> listAllRequests(RequestFilterDTO filter) {
+    public List<RequestResponseDTO> listFilterRequests(RequestFilterDTO filter) {
         List<Request> requests = requestRepository.findFilterRequest(
                 filter.title(), filter.category(), filter.status(), filter.startDate(), filter.endDate());
         return requests.stream().map(RequestResponseDTO::new).toList();
@@ -46,6 +46,14 @@ public class RequestService {
     @Transactional(readOnly = true)
     public RequestResponseDTO getRequestById(Long id) {
         var req = requestRepository.findById(id).orElseThrow(() -> CustomException.requestNotFound(id));
+        return new RequestResponseDTO(req);
+    }
+
+    @Transactional(readOnly = true)
+    public RequestResponseDTO getRequestByIdAndUser(Long id, String username) {
+        var user = userRepository.findByUsername_Username(username).orElseThrow(() -> CustomException.userNotFound(username));
+        var req = requestRepository.findByIdAndUser(id, user);
+        validateOwnership(req, user.getUsername().getUsername());
         return new RequestResponseDTO(req);
     }
 
@@ -98,13 +106,16 @@ public class RequestService {
     public DashboardResponseDTO getDashboardForRequester(@Nullable String username) {
         var userId = userRepository.findByUsername_Username(username).orElseThrow(() -> CustomException.userNotFound(username));
         Map<RequestStatus, Long> map = new EnumMap<>(RequestStatus.class);
-        long totalRequest = requestRepository.countByUser(userId.getId());
+        long totalRequest = requestRepository.countByUser(userId);
         for (RequestStatus status : RequestStatus.values()) {
-            long count = requestRepository.countByStatus(userId.getId(), status);
+            long count = requestRepository.countByUserAndStatus(userId, status);
             map.put(status, count);
         }
 
-        var dash = new DashboardResponseDTO(totalRequest, map.getOrDefault(RequestStatus.OPEN, 0L), map.getOrDefault(RequestStatus.IN_PROGRESS, 0L), map.getOrDefault(RequestStatus.COMPLETED, 0L));
+        var dash = new DashboardResponseDTO(totalRequest,
+                map.getOrDefault(RequestStatus.OPEN, 0L),
+                map.getOrDefault(RequestStatus.IN_PROGRESS, 0L),
+                map.getOrDefault(RequestStatus.COMPLETED, 0L));
         return dash;
     }
 
@@ -115,7 +126,10 @@ public class RequestService {
             long count = requestRepository.countByStatus(status);
             map.put(status, count);
         }
-        var dash = new DashboardResponseDTO(totalRequest, map.getOrDefault(RequestStatus.OPEN, 0L), map.getOrDefault(RequestStatus.IN_PROGRESS, 0L), map.getOrDefault(RequestStatus.COMPLETED, 0L));
+        var dash = new DashboardResponseDTO(totalRequest,
+                map.getOrDefault(RequestStatus.OPEN, 0L),
+                map.getOrDefault(RequestStatus.IN_PROGRESS, 0L),
+                map.getOrDefault(RequestStatus.COMPLETED, 0L));
         return dash;
     }
 }
