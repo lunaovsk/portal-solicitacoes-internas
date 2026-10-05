@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.4.11
+    environment:
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: db_portal_solicitacoes
+    volumes:
+      - db_data:/var/lib/mysql
+  backend:
+    image: lunaovski/portal-solicitacao-back:1.0
+    container_name: portal-solicitacao
+    restart: always
+    depends_on:
+      - db
+    environment:
+      SPRING_DATASOURCE_URL: ${DB_URL}
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      API_SECURITY_TOKEN_SECRET: ${API_SECURITY_TOKEN_SECRET}
+      ATTENDANT_BOOTSTRAP_EMAIL: ${ATTEN_BOOTSTRAP_EMAIL}
+      ATTENDANT_BOOTSTRAP_PASSWORD: ${ATTEN_BOOTSTRAP_PASSWORD}
+      REQUESTER_BOOTSTRAP_EMAIL: ${REQ_BOOTSTRAP_EMAIL}
+      REQUESTER_BOOTSTRAP_PASSWORD: ${REQ_BOOTSTRAP_PASSWORD}
+  frontend:
+    image: lunaovski/portal-solicitacao-front:1.2
+    container_name: portal_web
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  db_data:
+
